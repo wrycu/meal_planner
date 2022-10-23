@@ -14,7 +14,7 @@ class Food(db.Model):
     notes = db.Column(db.Text)
     food_type = db.Column(db.Integer, nullable=False)
     cost = db.Column(db.Integer, nullable=False)
-    added = db.Column(db.Date, nullable=False)
+    added = db.Column(db.Date, nullable=False, server_default='CURDATE')
 
     def __repr__(self):
         return json.dumps({
@@ -37,7 +37,7 @@ class Meal(db.Model):
     name = db.Column(db.Text, nullable=False)
     notes = db.Column(db.Text)
     calories_s = db.Column(db.Integer)
-    last_consumed = db.Column(db.Date, nullable=False)
+    last_consumed = db.Column(db.Date, nullable=False, server_default="CURDATE")
     consume_count = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):

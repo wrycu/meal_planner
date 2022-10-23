@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="ui grid">
+        <div class="row">
+            <div class="one wide column"></div>
+            <div class="fourteen wide column">
+                <table class="ui striped table">
+                    <thead>
+                    <th>
+                        ID
+                    </th>
+                    <th>
+                        Source
+                    </th>
+                    <th>
+                        Vendor
+                    </th>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Details
+                    </th>
+                    <th>
+                        Calories
+                    </th>
+                    <th>
+                        Notes
+                    </th>
+                    <th>
+                        Food Type
+                    </th>
+                    <th>
+                        Cost
+                    </th>
+                    <th>
+                        Added
+                    </th>
+                    </thead>
+                    <tbody>
+                    {% for food in foods %}
+                        <tr>
+                            <td>
+                                {{ food.id }}
+                            </td>
+                            <td>
+                                {{ food.source }}
+                            </td>
+                            <td>
+                                {{ food.vendor }}
+                            </td>
+                            <td>
+                                {{ food.name }}
+                            </td>
+                            <td>
+                                {{ food.details }}
+                            </td>
+                            <td>
+                                {{ food.calories }}
+                            </td>
+                            <td>
+                                {{ food.notes }}
+                            </td>
+                            <td>
+                                {{ food.food_type }}
+                            </td>
+                            <td>
+                                {{ food.cost }}
+                            </td>
+                            <td>
+                                {{ food.added }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="centered row">
+            <div class="ui button" id="btn-add-food">+</div>
+        </div>
+        <div class="centered row">
+            <div class="four wide column">
+                <div class="ui hidden positive message" id="flash_modal">
+                    <i class="close icon"></i>
+                    <div class="header">
+                        Outcome
+                    </div>
+                    <p id="flash_content">
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui modal" id="add_food_modal">
+        <div class="header">Add Food</div>
+        <div class="content">
+            <form class="ui form" id="add_food">
+                <div class="field">
+                    <label>Source</label>
+                    <select name="source" class="ui fluid dropdown">
+                        <option value="">Source</option>
+                        <option value="doordash">DoorDash</option>
+                        <option value="hello_fresh">Hello Fresh</option>
+                        <option value="self">Self</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Vendor</label>
+                    <input type="text" name="vendor" placeholder="Vendor">
+                </div>
+                <div class="field">
+                    <label>Name</label>
+                    <input type="text" name="name" placeholder="Name">
+                </div>
+                <div class="field">
+                    <label>Details</label>
+                    <input type="text" name="details" placeholder="">
+                </div>
+                <div class="field">
+                    <label>Calories</label>
+                    <input type="text" name="calories" placeholder="0">
+                </div>
+                <div class="field">
+                    <label>Notes</label>
+                    <input type="text" name="notes" placeholder="">
+                </div>
+                <div class="field">
+                    <label>Food Type</label>
+                    <select name="food_type" multiple="" class="ui fluid dropdown">
+                        <option value="">Food Type</option>
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Cost</label>
+                    <div class="ui input left icon">
+                        <i class="dollar sign icon"></i>
+                        <input type="text" name="cost" placeholder="0">
+                    </div>
+                </div>
+                <button class="ui button" type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+
+<script>
+  $(document).ready(function () {
+    // set up the basics
+    $('.ui.dropdown').dropdown();
+    $("#btn-add-food").click(function () {
+      $('#add_food_modal').modal('show');
+    });
+    // set up the modal for receiving flashes
+    $('.message .close').on('click', function () {
+      $(this).closest('.message').transition('fade');
+    });
+
+    // handle form submission
+    $("#add_food").submit(function (e) {
+      e.preventDefault();
+      $('#add_food').form({
+        fields: {
+          source: 'minCount[1]',
+          vendor: 'empty',
+          name: 'empty',
+          details: 'empty',
+          calories: 'integer',
+          notes: 'empty',
+          food_type: 'minCount[1]',
+          cost: 'integer'
+        }
+      });
+      if ($('#add_food').form('is valid')) {
+        // form is valid (both email and name)
+        console.log($('#add_food').serialize());
+        $.ajax({
+          url: "{{ url_for('meal_planner.food') }}",
+          data: $('#add_food').serialize(),
+          method: 'POST'
+        }).done(function (data) {
+          $('#add_food_modal').modal('hide');
+          $("#add_food").trigger('reset');
+          // reset misses dropdowns, so we need to trigger it ourselves
+          $('.ui.dropdown').dropdown('clear');
+          $('#flash_content').html(data);
+          $('#flash_modal').removeClass('hidden');
+        });
+      }
+    });
+  });
+</script>
+{% endblock %}
