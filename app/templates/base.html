@@ -6,7 +6,24 @@
     <script src="{{ url_for('static', filename='js/semantic.min.js') }}"></script>
 </head>
 <body>
+<div class="ui secondary pointing menu">
+    <a class="item {% if request.endpoint == 'meal_planner.food' %}active{% endif %}" href="{{ url_for('meal_planner.food') }}">
+        Food
+    </a>
+    <a class="item {% if request.endpoint == 'meal_planner.meal' %}active{% endif %}" href="{{ url_for('meal_planner.meal') }}">
+        Meals
+    </a>
+    <a class="item {% if request.endpoint == 'meal_planner.logger' %}active{% endif %}" href="{{ url_for('meal_planner.logger') }}">
+        Logger
+    </a>
+    <a class="ui item {% if request.endpoint == 'meal_planner.planner' %}active{% endif %}" href="{{ url_for('meal_planner.planner') }}">
+        Planner
+    </a>
+</div>
+<div class="ui segment">
 {% block content %}
 {% endblock %}
+</div>
+
 </body>
 </html>

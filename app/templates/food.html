@@ -62,10 +62,26 @@
                                 {{ food.notes }}
                             </td>
                             <td>
-                                {{ food.food_type }}
+                                {% if food.food_type == 7 %}
+                                    breakfast, lunch, dinner
+                                {% elif food.food_type == 6 %}
+                                    lunch, dinner
+                                {% elif food.food_type == 5 %}
+                                    breakfast, dinner
+                                {% elif food.food_type == 4 %}
+                                    dinner
+                                {% elif food.food_type == 3 %}
+                                    breakfast, lunch
+                                {% elif food.food_type == 2 %}
+                                    lunch
+                                {% elif food.food_type == 1 %}
+                                    breakfast
+                                {% else %}
+                                    unknown
+                                {% endif %}
                             </td>
                             <td>
-                                {{ food.cost }}
+                                ${{ food.cost }}
                             </td>
                             <td>
                                 {{ food.added }}
@@ -77,7 +93,7 @@
             </div>
         </div>
         <div class="centered row">
-            <div class="ui button" id="btn-add-food">+</div>
+            <div class="ui button" id="btn_add_food">+</div>
         </div>
         <div class="centered row">
             <div class="four wide column">
@@ -152,7 +168,7 @@
   $(document).ready(function () {
     // set up the basics
     $('.ui.dropdown').dropdown();
-    $("#btn-add-food").click(function () {
+    $("#btn_add_food").click(function () {
       $('#add_food_modal').modal('show');
     });
     // set up the modal for receiving flashes

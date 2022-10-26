@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <div class="ui grid">
+        <div class="one wide column"></div>
+        <div class="fourteen wide column">
+            <table class="ui striped table">
+                <thead>
+                <th>
+                    Name
+                </th>
+                <th>
+                    Calories
+                </th>
+                <th>
+                    Items
+                </th>
+                <th>
+                    Last Consumed
+                </th>
+                <th>
+                    Cost
+                </th>
+                </thead>
+                <tbody>
+                {% for meal in meals %}
+                    <tr>
+                        <td>
+                            {{ meal.name }}
+                        </td>
+                        <td>
+                            {{ meal.calories_c }}
+                        </td>
+                        <td>
+                            {{ map }}
+                            <ul>
+                                {% for food in meal.foods %}
+                                    <li>
+                                        {{ food.name }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            {{ meal.last_consumed }}
+                        </td>
+                        <td>
+                            ${{ meal.cost_c }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="centered row">
+            <div class="ui button" id="btn_add_meal">+</div>
+        </div>
+        <div class="centered row">
+            <div class="four wide column">
+                <div class="ui hidden positive message" id="flash_modal">
+                    <i class="close icon"></i>
+                    <div class="header">
+                        Outcome
+                    </div>
+                    <p id="flash_content">
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui modal" id="add_meal_modal">
+        <div class="header">Create Meal</div>
+        <div class="content">
+            <form class="ui form" id="add_meal">
+                <div class="field">
+                    <label>Name</label>
+                    <input type="text" name="name" placeholder="Name">
+                </div>
+                <div class="field">
+                    <label>Notes</label>
+                    <input type="text" name="notes" placeholder="Notes">
+                </div>
+                <div class="field">
+                    <label>Meal Type</label>
+                    <select name="type" multiple="" class="ui fluid dropdown">
+                        <option value="">Meal Type</option>
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Food</label>
+                    <select name="food" multiple="" class="ui fluid search dropdown">
+                        <option value="">Food(s)</option>
+                        {% for food in foods %}
+                            <option value="{{ food.id }}">{{ food.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button class="ui button" type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+    // set up the basics
+    $('.ui.dropdown').dropdown();
+    $("#btn_add_meal").click(function () {
+      $('#add_meal_modal').modal('show');
+    });
+    // set up the modal for receiving flashes
+    $('.message .close').on('click', function () {
+      $(this).closest('.message').transition('fade');
+    });
+
+    // handle form submission
+    $("#add_meal").submit(function (e) {
+      e.preventDefault();
+      $('#add_meal').form({
+        fields: {
+          name: 'empty',
+          notes: 'empty',
+          type: 'minCount[1]',
+          food: 'minCount[1]',
+        }
+      });
+      if ($('#add_meal').form('is valid')) {
+        // form is valid (both email and name)
+        console.log($('#add_meal').serialize());
+        $.ajax({
+          url: "{{ url_for('meal_planner.meal') }}",
+          data: $('#add_meal').serialize(),
+          method: 'POST'
+        }).done(function (data) {
+          $('#add_meal_modal').modal('hide');
+          $("#add_meal").trigger('reset');
+          // reset misses dropdowns, so we need to trigger it ourselves
+          $('.ui.dropdown').dropdown('clear');
+          $('#flash_content').html(data);
+          $('#flash_modal').removeClass('hidden');
+        });
+      }
+    });
+      });
+    </script>
+{% endblock %}
