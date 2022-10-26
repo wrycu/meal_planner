@@ -1,9 +1,164 @@
 {% extends "base.html" %}
 {% block content %}
+    <div class="ui grid">
+        <div class="centered row">
+                <div class="ui compact {% if l_meals['calories_total'] < 2000 %}positive{% else %}negative{% endif %} message">
+        <i class="close icon"></i>
+        <p>You've consumed <b>{{ l_meals['calories_total'] }}</b> of 2,000 calories and have
+            <b>{{ 2000 - l_meals['calories_total'] }}</b>
+            calories remaining for today.</p>
+    </div>
+        </div>
+        <div class="row">
+            <div class="one wide column"></div>
+            <div class="fourteen wide column">
+                <table class="ui celled striped table">
+                    <thead>
+                    <tr>
+                        <th>
+                            Meal
+                        </th>
+                        <th>
+                            Name
+                        </th>
+                        <th>
+                            Items
+                        </th>
+                        <th>
+                            Total Calories
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% set meals = ['breakfast', 'lunch', 'dinner'] %}
+                    {% for meal in meals %}
+                        {% for l_meal in l_meals[meal] %}
+                            <tr>
+                                <td>
+                                    {{ meal }}
+                                </td>
+                                <td>
+                                    <a class="ui tiny circular label unlog_meal" data-id="{{ l_meal['l_id'] }}">X</a>
+                                    {{ l_meal['name'] }}
+                                </td>
+                                <td>
+                                    {% for food in l_meal['foods'] %}
+                                        {{ food.name }},
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {{ l_meal['calories_c'] }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="centered row">
+            <div class="ui button" id="btn_log_meal">+</div>
+        </div>
+        <div class="centered row">
+            <div class="four wide column">
+                <div class="ui hidden positive message" id="flash_modal">
+                    <i class="close icon"></i>
+                    <div class="header">
+                        Outcome
+                    </div>
+                    <p>
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                <ul class=flashes>
+                                    {% for category, message in messages %}
+                                        <li class="{{ category }}">{{ message }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        {% endwith %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<script>
-  $(document).ready(function () {
+    <div class="ui modal" id="log_meal_modal">
+        <div class="header">Add Food</div>
+        <div class="content">
+            <form class="ui form" id="log_meal">
+                <div class="field">
+                    <label>Meal</label>
+                    <select name="meal" class="ui fluid dropdown">
+                        <option value="">Select Meal</option>
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Food</label>
+                    <select name="food" class="ui fluid search dropdown">
+                        <option value="">Select Food</option>
+                        {% for possible_meal in possible_meals %}
+                            <option value="{{ possible_meal.id }}">{{ possible_meal.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-  });
-</script>
+                <button class="ui button" type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+    <script>
+      $(document).ready(function () {
+        // set up the basics
+        $('.ui.dropdown').dropdown();
+        $("#btn_log_meal").click(function () {
+          $('#log_meal_modal').modal('show');
+        });
+        // set up the modal for receiving flashes
+        $('.message .close').on('click', function () {
+          $(this).closest('.message').transition('fade');
+        });
+        // show the message for flashes
+        if ($('.flashes').length > 0) {
+          $('#flash_modal').removeClass('hidden');
+        }
+        // handle form submission
+        $("#log_meal").submit(function (e) {
+          e.preventDefault();
+          $('#log_meal').form({
+            fields: {
+              meal: 'minCount[1]',
+              food: 'minCount[1]',
+            }
+          });
+          if ($('#log_meal').form('is valid')) {
+            // form is valid (both email and name)
+            console.log($('#log_meal').serialize());
+            $.ajax({
+              url: "{{ url_for('meal_planner.logger') }}",
+              data: $('#log_meal').serialize(),
+              method: 'POST'
+            }).done(function (data) {
+              $('#log_meal_modal').modal('hide');
+              $("#log_meal").trigger('reset');
+              // reset misses dropdowns, so we need to trigger it ourselves
+              $('.ui.dropdown').dropdown('clear');
+              location.reload();
+            });
+          }
+        });
+        // handle removing logged meals
+        $('.unlog_meal').click(function () {
+          $.ajax({
+            url: "{{ url_for('meal_planner.logger') }}",
+            data: {'logged_id': $(this).attr('data-id')},
+            method: 'DELETE'
+          }).done(function (data) {
+            location.reload();
+          });
+        });
+      });
+    </script>
 {% endblock %}

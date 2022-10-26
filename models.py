@@ -60,3 +60,18 @@ class MealMap(db.Model):
             'meal_id': self.meal_id,
             'food_id': self.food_id,
         })
+
+
+class Logged(db.Model):
+    id = db.Column(db.Integer, primary_key=True, nullable=False, autoincrement=True)
+    type = db.Column(db.Enum('breakfast', 'lunch', 'dinner'), nullable=False)
+    meal_id = db.Column(db.Integer, db.ForeignKey(Meal.id), primary_key=True, nullable=False)
+    date = db.Column(db.Date, nullable=False)
+
+    def __repr__(self):
+        return json.dumps({
+            'id': self.id,
+            'type': self.type,
+            'meal_id': self.meal_id,
+            'date': str(self.date),
+        })
